@@ -8,7 +8,7 @@
  * @param[in] rst       the synchronous reset
  * @param[in] en        the enable signal to generate the next code
  * @param[out] code     the output code
- * @param[out] cycled   whether \p code is the final code for the cycle
+ * @param[out] cycled   whether \p code is the start of the cycle
  */
 
 module gold_code #(
@@ -77,5 +77,5 @@ module gold_code #(
         end
     end  // always_ff
     assign code = get_g2_taps(g2_state) ^ g1_state[9];
-    assign cycled = (g1_state == 10'b0111111111);
+    assign cycled = (g1_state == '1);
 endmodule  // lfsr_code
