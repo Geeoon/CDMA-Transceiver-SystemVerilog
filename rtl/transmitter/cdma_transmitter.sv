@@ -4,8 +4,8 @@
  * @brief combines data with the code using short codes
  * @param PRN           set between 1-37 to use Gold codes
  * @param CLOCK_FREQ    the frequency of the clock in Hz
- * @param CHIRP_FREQ    the frequency of the chirps in Hz
- * @param N             the number of repetitions of the code
+ * @param CHIP_FREQ     the frequency of the chips in Hz
+ * @param N             the spreading factor
  * @param[in] clk       the clock driving the sequential logic
  * @param[in] rst       the synchronous reset
  * @param[in] data      the data bit to code
@@ -16,10 +16,10 @@
 module cdma_transmitter #(
     parameter int PRN=1,
     parameter int CLOCK_FREQ=163_680_000,
-    parameter int CHIRP_FREQ=1023,
+    parameter int CHIP_FREQ=1023,
     parameter int N=20,
 
-    localparam int DIV_FREQ=CLOCK_FREQ/CHIRP_FREQ
+    localparam int DIV_FREQ=CLOCK_FREQ/CHIP_FREQ
 ) (
     input logic clk,
     input logic rst,
@@ -28,12 +28,12 @@ module cdma_transmitter #(
     output logic code,
     output logic done
 );
-    if ((CLOCK_FREQ % CHIRP_FREQ) != 0) $error("The clock frequency needs to be a multiple of the chirp frequency");
+    if ((CLOCK_FREQ % CHIP_FREQ) != 0) $error("The clock frequency needs to be a multiple of the chip frequency");
     // SUBMODULES
     // intermediate signals
     logic en;
     logic cycled;
-    logic code_chirp;
+    logic code_chip;
 
     // done generator
     lfsr_timer #(
@@ -65,9 +65,9 @@ module cdma_transmitter #(
         .rst,
         .en,
 
-        .code(code_chirp),
+        .code(code_chip),
         .cycled
     );
 
-    assign code = code_chirp ^ data;
+    assign code = code_chip ^ data;
 endmodule  // cdma_transmitter

@@ -20,7 +20,7 @@ module cdma_transmitter_tb #(
         cdma_transmitter #(
             .PRN(PRN),
             .CLOCK_FREQ(2),
-            .CHIRP_FREQ(1),
+            .CHIP_FREQ(1),
             .N(20)
         ) dut (
             .clk,
