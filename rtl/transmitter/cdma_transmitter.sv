@@ -41,7 +41,7 @@ module cdma_transmitter #(
     ) counter_m (
         .clk,
         .rst,
-        .en(cycled),
+        .en(cycled & en),
 
         .done
     );

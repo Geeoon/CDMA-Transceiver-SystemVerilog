@@ -88,19 +88,13 @@ module gold_code_tb #(
         @(posedge clk); #5;
         rst = 0;
         en = 1;
-        for (int i = 1; i <= 37; i++) begin
-            assert(cycled[i]);
-        end
-    
         $display(" -- Testing the first 10 chips for PRNs 1-37 -- ");
         repeat(10) begin
             for (int i = 1; i <= 37; i++) begin
                 chips[i] = (chips[i] << 1) | 32'(code[i]);
-            end
-            @(posedge clk); #5;
-            for (int i = 1; i <= 37; i++) begin
                 assert(~cycled[i]);
             end
+            @(posedge clk); #5;
         end
         for (int i = 1; i <= 37; i++) begin
             $display("PRN %2d: %0o ?= %0o", i, chips[i], real_chips[i]);
@@ -109,26 +103,23 @@ module gold_code_tb #(
 
         $display(" -- Testing cycled signal for PRNs 1-37 -- ");
         repeat(1012) begin
-            @(posedge clk); #5;
             for (int i = 1; i <= 37; i++) begin
                 assert(~cycled[i]);
             end
+            @(posedge clk); #5;
         end
-
-        @(posedge clk); #5;
         for (int i = 1; i <= 37; i++) begin
             assert(cycled[i]);
         end
+        @(posedge clk); #5;
         $display(" -- Testing first chips PRNs, again -- ");
         chips = '{default: 0};
         repeat(10) begin
             for (int i = 1; i <= 37; i++) begin
                 chips[i] = (chips[i] << 1) | 32'(code[i]);
-            end
-            @(posedge clk); #5;
-            for (int i = 1; i <= 37; i++) begin
                 assert(~cycled[i]);
             end
+            @(posedge clk); #5;
         end
         for (int i = 1; i <= 37; i++) begin
             $display("PRN %2d: %0o ?= %0o", i, chips[i], real_chips[i]);
