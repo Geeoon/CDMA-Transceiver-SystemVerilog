@@ -31,6 +31,7 @@ module cdma_correlator #(
     output logic valid
 );
     if ((CLOCK_FREQ % (CHIP_FREQ*OVERSAMPLING)) != 0) $error("The clock frequency needs to be a multiple of the chip frequency times oversampling");
+    if (OVERSAMPLING < 2) $error("You must oversample by at least 2");
     logic [OVERSAMPLING*CODE_LENGTH-1:0] kernel;
     // SUBMODULES
     // intermediate signals
@@ -65,7 +66,7 @@ module cdma_correlator #(
 
     // code enable generator
     lfsr_timer #(
-        .COUNT(OVERSAMPLING)
+        .COUNT(OVERSAMPLING-1)
     ) code_enable_gen_m (
         .clk,
         .rst(rst | code_en),

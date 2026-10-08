@@ -82,14 +82,17 @@ module cdma_correlator_tb #(
             @(posedge clk); #5;
         end
 
-        for (int i = 1; i < 13; i++) begin
+        for (int i = 1; i < 25; i++) begin
             shift = 1;
+            $display(" -- -- -- -- ");
+            $display("dut.correlator_m.signal: %b", dut.correlator_m.signal[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
+            $display("dut.correlator_m.kernel: %b", dut.correlator_m.kernel[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
+            $display("dut.code_enable_gen_m.done: %b. dut.code_en: %b", dut.code_enable_gen_m.done, dut.code_en );
+            // if (out > 1000) begin
+            //     $display("%d/2 chips off: %d", i, out);
+            // end
             @(posedge clk); #5;
-            $display("dut.correlator_m.signal: %b", dut.correlator_m.signal);
-            $display("dut.correlator_m.kernel: %b", dut.correlator_m.kernel);
-            if (out > 1400) begin
-                $display("%d/2 chips off: %d", i, out);
-            end
+
         end
 
         $display(" -- FINISHED TESTS -- ");
