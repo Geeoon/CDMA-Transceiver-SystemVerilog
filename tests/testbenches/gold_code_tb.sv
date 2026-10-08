@@ -14,6 +14,7 @@ module gold_code_tb #(
 
     // outputs
     logic code [1:37];
+    logic cycled [1:37];
 
     int chips [1:37] = '{default: 0};
     int real_chips [1:37] = {
@@ -63,8 +64,9 @@ module gold_code_tb #(
             .clk,
             .rst,
             .en,
-
-            .code(code[PRN])
+            
+            .code(code[PRN]),
+            .cycled(cycled[PRN])
         );
     end
 
@@ -90,6 +92,32 @@ module gold_code_tb #(
         repeat(10) begin
             for (int i = 1; i <= 37; i++) begin
                 chips[i] = (chips[i] << 1) | 32'(code[i]);
+                assert(~cycled[i]);
+            end
+            @(posedge clk); #5;
+        end
+        for (int i = 1; i <= 37; i++) begin
+            $display("PRN %2d: %0o ?= %0o", i, chips[i], real_chips[i]);
+            assert(chips[i] == real_chips[i]);
+        end
+
+        $display(" -- Testing cycled signal for PRNs 1-37 -- ");
+        repeat(1012) begin
+            for (int i = 1; i <= 37; i++) begin
+                assert(~cycled[i]);
+            end
+            @(posedge clk); #5;
+        end
+        for (int i = 1; i <= 37; i++) begin
+            assert(cycled[i]);
+        end
+        @(posedge clk); #5;
+        $display(" -- Testing first chips PRNs, again -- ");
+        chips = '{default: 0};
+        repeat(10) begin
+            for (int i = 1; i <= 37; i++) begin
+                chips[i] = (chips[i] << 1) | 32'(code[i]);
+                assert(~cycled[i]);
             end
             @(posedge clk); #5;
         end
