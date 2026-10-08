@@ -16,16 +16,12 @@ module cdma_transmitter_tb #(
     logic code [1:37];
     logic done [1:37];
 
-    logic correct_code [1:37];
-    logic chirps [1:37];
-    logic code_enable;
-
     for (genvar PRN = 1; PRN <= 37; PRN++) begin
         cdma_transmitter #(
             .PRN(PRN),
             .CLOCK_FREQ(2),
             .CHIRP_FREQ(1),
-            .N(N)
+            .N(20)
         ) dut (
             .clk,
             .rst,
@@ -33,17 +29,6 @@ module cdma_transmitter_tb #(
             
             .code(code[PRN]),
             .done(done[PRN])
-        );
-
-        gold_code #(
-            .PRN(PRN)
-        ) correct_code_m (
-            .clk,
-            .rst,
-            .en(code_enable),
-
-            .code(correct_code),
-            .cycled()
         );
     end
 
@@ -61,13 +46,20 @@ module cdma_transmitter_tb #(
 
         $display(" -- Starting cdma_transmitter test -- ");
         rst = 1;
-        en = 0;
         data = 1;
         @(posedge clk); #5;
         rst = 0;
 
-        $display(" -- Testing all 1 data bits -- ");
+        $display(" -- Letting it run for 1 HIGH bit -- ");
+        repeat(1023*20) begin
+            @(posedge clk); #5;
+        end
 
+        $display(" -- Letting it run for 1 LOW bit -- ");
+        data = 0;
+        repeat(1023*20) begin
+            @(posedge clk); #5;
+        end
 
         $display(" -- FINISHED TESTS -- ");
         $finish;

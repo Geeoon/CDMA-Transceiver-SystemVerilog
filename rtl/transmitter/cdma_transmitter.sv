@@ -33,7 +33,7 @@ module cdma_transmitter #(
     // intermediate signals
     logic en;
     logic cycled;
-    logic code;
+    logic code_chirp;
 
     // done generator
     lfsr_timer #(
@@ -65,9 +65,9 @@ module cdma_transmitter #(
         .rst,
         .en,
 
-        .code,
+        .code(code_chirp),
         .cycled
     );
 
-    assign done = code ^ data;
+    assign code = code_chirp ^ data;
 endmodule  // cdma_transmitter
