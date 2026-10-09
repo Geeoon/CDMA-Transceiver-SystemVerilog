@@ -9,7 +9,7 @@ module cdma_correlator_tb #(
     parameter int PRN=1,
     parameter int CODE_LENGTH=1023,
     parameter int OVERSAMPLING=2,
-    parameter int CLOCK_FREQ=4,
+    parameter int CLOCK_FREQ=8,
     parameter int CHIP_FREQ=1
 ) ();
     // inputs
@@ -73,12 +73,30 @@ module cdma_correlator_tb #(
         @(posedge clk); #5;
         rst = 0;
 
+        repeat(16*4) begin
+            $display(" -- -- -- -- ");
+            $display("dut.correlator_m.signal: %b", dut.correlator_m.signal[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
+            $display("dut.correlator_m.kernel: %b", dut.correlator_m.kernel[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
+            $display("dut.code_enable_gen_m.done: %b. dut.code_en: %b. dut.sample_en: %b", dut.code_enable_gen_m.done, dut.code_en, dut.sample_en );
+            @(posedge clk); #5;
+        end
+        $finish;
+
         repeat(1023*4) begin
+            @(posedge clk); #5;
+        end
+
+        repeat(16) begin
+            $display(" -- -- -- -- ");
+            $display("dut.correlator_m.signal: %b", dut.correlator_m.signal[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
+            $display("dut.correlator_m.kernel: %b", dut.correlator_m.kernel[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
+            $display("dut.code_enable_gen_m.done: %b. dut.code_en: %b. dut.sample_en: %b", dut.code_enable_gen_m.done, dut.code_en, dut.sample_en );
             @(posedge clk); #5;
         end
 
         repeat(10) begin
             $display("In-phase: %d", out);
+            assert(int'(out) == CODE_LENGTH*OVERSAMPLING);
             @(posedge clk); #5;
         end
 

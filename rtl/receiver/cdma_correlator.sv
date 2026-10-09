@@ -81,15 +81,22 @@ module cdma_correlator #(
     ) code_module_m (
         .clk,
         .rst,
-        .en(code_en),
+        .en(code_en & sample_en),
 
         .code,
         .cycled()
     );
 
     always_ff @(posedge clk) begin
-        if (sample_en | shift) begin
-            kernel <= { code, kernel[OVERSAMPLING*CODE_LENGTH-1:1] }; 
+        if (DIV_FREQ == 1) begin
+            if (sample_en & ~shift) begin
+                // change phase by not moving lol
+                kernel <= { code, kernel[OVERSAMPLING*CODE_LENGTH-1:1] };
+            end
+        end else begin
+            if (sample_en | shift) begin
+                kernel <= { code, kernel[OVERSAMPLING*CODE_LENGTH-1:1] }; 
+            end
         end
     end  // always_ff
 endmodule  // cdma_correlator
