@@ -81,11 +81,11 @@ module lfsr_timer #(
         logic [N-1:0] lfsr_state;
 
         always_ff @(posedge clk) begin
-            if (en) begin
-                if (rst) begin
-                    done <= 0;
-                    lfsr_state <= (N)'(calculate_start());
-                end else begin
+            if (rst) begin
+                done <= 0;
+                lfsr_state <= (N)'(calculate_start());
+            end else begin
+                if (en) begin
                     lfsr_state <= get_next_state(lfsr_state);
                     if (lfsr_state == '1) begin
                         done <= 1;

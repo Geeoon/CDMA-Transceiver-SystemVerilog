@@ -2,15 +2,17 @@
  * @file cdma_correlator.sv
  * @author Geeoon Chung
  * @brief acquires and correlates the CDMA signal
- * @param PRN           the PRN from 1-37
- * @param CODE_LENGTH   the length of the code (epoch)
- * @param OVERSAMPLING  the resolution of the acquisition (2 means 1/2 chip resolution)
- * @param CLOCK_FREQ    the frequency of \p clk in Hz
- * @param CHIP_FREQ     the chip rate in Hz
- * @param[in] clk       the clock driving the sequential logic
- * @param[in] rst       the active HIGH reset signal
- * @param[in] signal    the incoming signal coming in at the clock frequency
- * @param[out] out      the correlation for the code (epoch)
+ * @param PRN               the PRN from 1-37
+ * @param CODE_LENGTH       the length of the code (epoch)
+ * @param OVERSAMPLING      the resolution of the acquisition (2 means 1/2 chip resolution)
+ * @param CLOCK_FREQ        the frequency of \p clk in Hz
+ * @param CHIP_FREQ         the chip rate in Hz
+ * @param[in] clk           the clock driving the sequential logic
+ * @param[in] rst           the active HIGH reset signal
+ * @param[in] signal        the incoming signal coming in at the clock frequency
+ * @param[out] out          the correlation for the code (epoch)
+ * @param[out] valid        whether the kernel has been fully loaded
+ * @param[out] shiftable    whether it's possible to shift on this cycle
  */
 
 module cdma_correlator #(
@@ -28,7 +30,8 @@ module cdma_correlator #(
     input logic shift,
 
     output logic [$clog2(CODE_LENGTH*OVERSAMPLING+1)-1:0] out,
-    output logic valid
+    output logic valid,
+    output logic shiftable
 );
     if ((CLOCK_FREQ % (CHIP_FREQ*OVERSAMPLING)) != 0) $error("The clock frequency needs to be a multiple of the chip frequency times oversampling");
     if (OVERSAMPLING < 2) $error("You must oversample by at least 2");
@@ -69,7 +72,7 @@ module cdma_correlator #(
         .COUNT(OVERSAMPLING-1)
     ) code_enable_gen_m (
         .clk,
-        .rst(rst | code_en),
+        .rst(rst | (code_en & (sample_en | shift))),
         .en(sample_en | shift),
 
         .done(code_en)
@@ -81,7 +84,7 @@ module cdma_correlator #(
     ) code_module_m (
         .clk,
         .rst,
-        .en(code_en & sample_en),
+        .en(code_en & (sample_en | shift)),
 
         .code,
         .cycled()
@@ -99,4 +102,12 @@ module cdma_correlator #(
             end
         end
     end  // always_ff
+
+    always_comb begin
+        if (DIV_FREQ == 1) begin
+            shiftable = 1;
+        end else begin
+            shiftable = ~sample_en;
+        end
+    end  // always_comb
 endmodule  // cdma_correlator
