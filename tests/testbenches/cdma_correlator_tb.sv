@@ -12,7 +12,8 @@ module cdma_correlator_tb #(
     parameter int CLOCK_FREQ=8,
     parameter int CHIP_FREQ=1,
 
-    localparam int DIV_FREQ=CLOCK_FREQ/(CHIP_FREQ*OVERSAMPLING)
+    localparam int DIV_FREQ=CLOCK_FREQ/(CHIP_FREQ*OVERSAMPLING),
+    localparam int LAYERS=1+$clog2(CODE_LENGTH*OVERSAMPLING)
 ) ();
     // inputs
     logic clk;
@@ -78,38 +79,29 @@ module cdma_correlator_tb #(
         @(posedge clk); #5;
         rst = 0;
 
-        repeat(DIV_FREQ*OVERSAMPLING*CODE_LENGTH) begin
+        @(posedge done); #5;
+        repeat(LAYERS) begin
             @(posedge clk); #5;
         end
-
-        // repeat(DIV_FREQ*OVERSAMPLING*4) begin
-        //     $display(" -- -- -- -- ");
-        //     $display("dut.correlator_m.signal: %b", dut.correlator_m.signal[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
-        //     $display("dut.correlator_m.kernel: %b", dut.correlator_m.kernel[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
-        //     $display("dut.code_enable_gen_m.done: %b. dut.code_en: %b. dut.sample_en: %b", dut.code_enable_gen_m.done, dut.code_en, dut.sample_en );
-        //     @(posedge clk); #5;
-        // end
-        @(posedge done); #5;
 
         repeat(DIV_FREQ*OVERSAMPLING*4) begin
             $display("In-phase: %d", out);
-            // assert(int'(out) == CODE_LENGTH*OVERSAMPLING);
+            assert(int'(out) == CODE_LENGTH*OVERSAMPLING);
             @(posedge clk); #5;
         end
 
-        for (int i = 1; i < 25; i++) begin
-            shift = shiftable;
-            $display(" -- -- -- -- ");
-            $display("dut.correlator_m.signal: %b", dut.correlator_m.signal[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
-            $display("dut.correlator_m.kernel: %b", dut.correlator_m.kernel[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
-            $display("dut.code_enable_gen_m.done: %b. dut.code_en: %b", dut.code_enable_gen_m.done, dut.code_en );
-            // if (out > 1000) begin
-            //     $display("%d/2 chips off: %d", i, out);
-            // end
+        repeat(10) begin
+            @(posedge shiftable); #5;
+            shift = 1;
             @(posedge clk); #5;
-
+            shift = 0;
+            repeat(LAYERS) begin
+                @(posedge clk); #5;
+            end
+            $display("In-phase: %d", out);
+            $display("signal: %b", dut.correlator_m.signal[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
+            $display("kernel: %b", dut.correlator_m.kernel[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
         end
-
         $display(" -- FINISHED TESTS -- ");
         $finish;
     end
