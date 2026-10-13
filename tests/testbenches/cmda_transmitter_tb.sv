@@ -51,7 +51,7 @@ module cdma_transmitter_tb #(
         rst = 0;
 
         $display(" -- Letting it run for 1 HIGH bit -- ");
-        repeat(1023*20*2) begin
+        repeat(1023*20*2 - 1) begin
             for (int i = 1; i <= 37; i++) begin
                 assert(~done[i]);
             end
@@ -60,10 +60,11 @@ module cdma_transmitter_tb #(
         for (int i = 1; i <= 37; i++) begin
             assert(done[i]);
         end
+        @(posedge clk); #5;
 
         $display(" -- Letting it run for 1 LOW bit -- ");
         data = 0;
-        repeat(1023*20*2) begin
+        repeat(1023*20*2 - 1) begin
             for (int i = 1; i <= 37; i++) begin
                 assert(~done[i]);
             end
@@ -72,6 +73,7 @@ module cdma_transmitter_tb #(
         for (int i = 1; i <= 37; i++) begin
             assert(done[i]);
         end
+        @(posedge clk); #5;
         $display(" -- FINISHED TESTS -- ");
         $finish;
     end

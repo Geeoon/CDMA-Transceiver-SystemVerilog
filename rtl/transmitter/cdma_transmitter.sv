@@ -34,16 +34,17 @@ module cdma_transmitter #(
     logic en;
     logic cycled;
     logic code_chip;
+    logic generated_done;
 
     // done generator
     lfsr_timer #(
-        .COUNT(N)
+        .COUNT(N-1)
     ) counter_m (
         .clk,
-        .rst(rst | done),
+        .rst(rst | (done & en)),
         .en(cycled & en),
 
-        .done
+        .done(generated_done)
     );
 
     // enable generator
@@ -70,4 +71,5 @@ module cdma_transmitter #(
     );
 
     assign code = code_chip ^ data;
+    assign done = generated_done & cycled & en;
 endmodule  // cdma_transmitter
