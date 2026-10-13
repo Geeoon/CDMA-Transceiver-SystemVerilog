@@ -40,7 +40,7 @@ module cdma_transmitter #(
         .COUNT(N)
     ) counter_m (
         .clk,
-        .rst,
+        .rst(rst | done),
         .en(cycled & en),
 
         .done

@@ -1,79 +1,84 @@
 /**
  * @file cdma_receiver.sv
  * @author Geeoon Chung
- * @brief acquires and decodes a CDMA signal
- * @param PRN           the PRN from 1-37
- * @param N             the spreading factor
- * @param CODE_LENGTH   the length of the code
- * @param OVERSAMPLING  the resolution of the acquisition (2 means 1/2 chip resolution)
- * @param THRESHOLD     the correlation threshold, distance from average
- * @param CLOCK_FREQ    the frequency of \p clk in Hz
- * @param CHIP_FREQ     the chip rate in Hz
- * @param[in] clk       the clock driving the sequential logic
- * @param[in] rst       the active HIGH reset signal
- * @param[in] signal    the incoming signal coming in at the clock frequency
- * @param[out] acquired whether or not the signal has been acquired
- * @param[out] out      the output of each bit at the data rate
+ * @brief receives a CDMA bit
+ * @param PRN               the PRN from 1-37
+ * @param CODE_LENGTH       the length of the code (epoch)
+ * @param OVERSAMPLING      the resolution of the acquisition (2 means 1/2 chip resolution)
+ * @param CLOCK_FREQ        the frequency of \p clk in Hz
+ * @param CHIP_FREQ         the chip rate in Hz
+ * @param[in] clk           the clock driving the sequential logic
+ * @param[in] rst           the active HIGH reset signal
+ * @param[in] signal        the incoming signal coming in at the clock frequency
+ * @param[out] bit          whether the kernel has been fully loaded
+ * @param[out] acquired     whether it's possible to shift on this cycle
  */
 
 module cdma_receiver #(
     parameter int PRN=1,
-    parameter int N=20,
     parameter int CODE_LENGTH=1023,
     parameter int OVERSAMPLING=2,
-    parameter int THRESHOLD=100,
     parameter int CLOCK_FREQ=163_680_000,
     parameter int CHIP_FREQ=1023,
 
-    localparam int DIV_FREQ=CLOCK_FREQ/(CHIP_FREQ*OVERSAMPLING)
+    localparam int CORRELATOR_BIT_WIDTH=$clog2(CODE_LENGTH*OVERSAMPLING+1)
 ) (
     input logic clk,
     input logic rst,
     input logic signal,
 
-    output logic acquired,
-    output logic out
+    output logic out,
+    output logic acquired
 );
-    if ((CLOCK_FREQ % (CHIP_FREQ*OVERSAMPLING)) != 0) $error("The clock frequency needs to be a multiple of the chip frequency times oversampling");
-    logic [OVERSAMPLING*CODE_LENGTH-1:0] kernel;
-    logic [N-1:0] epoch_history;
-    // SUBMODULES
-    // intermediate signals
-    logic shift_en;
-    logic code_en;
-    logic code;
+    // cdma_correlator #(
+    //     .PRN(PRN),
+    //     .CODE_LENGTH(CODE_LENGTH),
+    //     .OVERSAMPLING(OVERSAMPLING),
+    //     .CLOCK_FREQ(CLOCK_FREQ),
+    //     .CHIP_FREQ(CHIP_FREQ)
+    // ) correlator_on_m (
+    //     .clk,
+    //     .rst,
+    //     .signal,
+    //     .shift,
 
-    // shift_enable generator
-    lfsr_timer #(
-        .COUNT(DIV_FREQ-1)
-    ) shift_enable_gen_m (
-        .clk,
-        .rst(rst | shift_en),
-        .en(1),
+    //     .out,
+    //     .valid,
+    //     .shiftable
+    // );
 
-        .done(shift_en)
-    );  
+    // cdma_correlator #(
+    //     .PRN(PRN),
+    //     .CODE_LENGTH(CODE_LENGTH),
+    //     .OVERSAMPLING(OVERSAMPLING),
+    //     .CLOCK_FREQ(CLOCK_FREQ),
+    //     .CHIP_FREQ(CHIP_FREQ)
+    // ) correlator_early_m (
+    //     .clk,
+    //     .rst,
+    //     .signal,
+    //     .shift,
 
-    // code_enable generator
-    lfsr_timer #(
-        .COUNT(OVERSAMPLING)
-    ) code_enable_gen_m (
-        .clk,
-        .rst(rst | code_en),
-        .en(shift_en),
+    //     .out,
+    //     .valid,
+    //     .shiftable
+    // );
 
-        .done(code_en)
-    );
+    // cdma_correlator #(
+    //     .PRN(PRN),
+    //     .CODE_LENGTH(CODE_LENGTH),
+    //     .OVERSAMPLING(OVERSAMPLING),
+    //     .CLOCK_FREQ(CLOCK_FREQ),
+    //     .CHIP_FREQ(CHIP_FREQ)
+    // ) correlator_late_m (
+    //     .clk,
+    //     .rst,
+    //     .signal,
+    //     .shift,
 
-    // code generator(s):
-    gold_code #(
-        .PRN(PRN)
-    ) code_module_m (
-        .clk,
-        .rst,
-        .en(code_en),
+    //     .out,
+    //     .valid,
+    //     .shiftable
+    // );
 
-        .code,
-        .cycled()
-    );
 endmodule  // cdma_receiver
