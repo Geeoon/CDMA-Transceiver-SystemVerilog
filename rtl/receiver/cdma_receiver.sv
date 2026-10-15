@@ -19,9 +19,7 @@ module cdma_receiver #(
     parameter int CODE_LENGTH=1023,
     parameter int OVERSAMPLING=2,
     parameter int CLOCK_FREQ=163_680_000,
-    parameter int CHIP_FREQ=1023,
-
-    localparam int CORRELATOR_BIT_WIDTH=$clog2(CODE_LENGTH*OVERSAMPLING+1)
+    parameter int CHIP_FREQ=1023
 ) (
     input logic clk,
     input logic rst,
@@ -30,55 +28,44 @@ module cdma_receiver #(
     output logic out,
     output logic acquired
 );
-    // cdma_correlator #(
-    //     .PRN(PRN),
-    //     .CODE_LENGTH(CODE_LENGTH),
-    //     .OVERSAMPLING(OVERSAMPLING),
-    //     .CLOCK_FREQ(CLOCK_FREQ),
-    //     .CHIP_FREQ(CHIP_FREQ)
-    // ) correlator_on_m (
-    //     .clk,
-    //     .rst,
-    //     .signal,
-    //     .shift,
+    logic shift_on, shift_early, shift_late, start_timer;
+    logic shiftable, valids, in_range, done;
+    cdma_receiver_ctrl cdma_receiver_ctrl_m (
+        .clk,
+        .rst,
+        .shiftable,
+        .valids,
+        .in_range,
+        .done,
 
-    //     .out,
-    //     .valid,
-    //     .shiftable
-    // );
+        .shift_on,
+        .shift_early,
+        .shift_late,
+        .start_timer
+    );
 
-    // cdma_correlator #(
-    //     .PRN(PRN),
-    //     .CODE_LENGTH(CODE_LENGTH),
-    //     .OVERSAMPLING(OVERSAMPLING),
-    //     .CLOCK_FREQ(CLOCK_FREQ),
-    //     .CHIP_FREQ(CHIP_FREQ)
-    // ) correlator_early_m (
-    //     .clk,
-    //     .rst,
-    //     .signal,
-    //     .shift,
+    cdma_receiver_data #(
+        .PRN(PRN),
+        .CODE_LENGTH(CODE_LENGTH),
+        .OVERSAMPLING(OVERSAMPLING),
+        .CLOCK_FREQ(CLOCK_FREQ),
+        .CHIP_FREQ(CHIP_FREQ)
+    ) cdma_receiver_data_m (
+        .clk,
+        .rst,
+        .signal,
 
-    //     .out,
-    //     .valid,
-    //     .shiftable
-    // );
+        .shift_on,
+        .shift_early,
+        .shift_late,
+        .start_timer,
 
-    // cdma_correlator #(
-    //     .PRN(PRN),
-    //     .CODE_LENGTH(CODE_LENGTH),
-    //     .OVERSAMPLING(OVERSAMPLING),
-    //     .CLOCK_FREQ(CLOCK_FREQ),
-    //     .CHIP_FREQ(CHIP_FREQ)
-    // ) correlator_late_m (
-    //     .clk,
-    //     .rst,
-    //     .signal,
-    //     .shift,
+        .shiftable,
+        .valids,
+        .in_range,
+        .done,
 
-    //     .out,
-    //     .valid,
-    //     .shiftable
-    // );
-
+        .output_bit(out),
+        .output_valid(acquired)
+    );
 endmodule  // cdma_receiver
