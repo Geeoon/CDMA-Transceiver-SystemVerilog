@@ -10,7 +10,7 @@ TB_FILES := $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
 TB_NAMES := $(basename $(notdir $(TB_FILES)))
 
 VERILATOR_BUILD_DIR := $(BUILD_DIR)/verilator
-VERILATOR_FLAGS := --binary -j 0 --trace --no-stop-fail --assert
+VERILATOR_FLAGS := --binary -j 0 --trace --assert
 
 # One .vcd target per discovered testbench
 WAVEFORMS := $(addprefix $(WAVEFORM_DIR)/,$(addsuffix .vcd,$(TB_NAMES)))

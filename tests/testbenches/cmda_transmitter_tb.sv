@@ -1,7 +1,7 @@
 /**
  * @file cdma_transmitter_tb.sv
  * @author Geeoon Chung
- * @brief testbench for the cmda_transmitter module
+ * @brief testbench for the cdma_transmitter module
  */
 
 module cdma_transmitter_tb #(

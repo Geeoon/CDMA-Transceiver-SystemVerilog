@@ -19,12 +19,12 @@ module cdma_correlator_tb #(
     logic clk;
     logic rst;
     logic signal;
-    logic shift;
+    logic lshift, rshift;
 
     // outputs
     logic [$clog2(CODE_LENGTH*OVERSAMPLING+1)-1:0] out;
     logic valid;
-    logic shiftable;
+    logic lshiftable, rshiftable;
 
     logic data;
 
@@ -53,11 +53,13 @@ module cdma_correlator_tb #(
         .clk,
         .rst,
         .signal,
-        .shift,
+        .lshift,
+        .rshift,
         
         .out,
         .valid,
-        .shiftable
+        .lshiftable,
+        .rshiftable
     );
 
     initial begin
@@ -75,7 +77,8 @@ module cdma_correlator_tb #(
         $display(" -- Starting cdma_correlator test -- ");
         rst = 1;
         data = 0;
-        shift = 0;
+        lshift = 0;
+        rshift = 0;
         @(posedge clk); #5;
         rst = 0;
 
@@ -90,18 +93,37 @@ module cdma_correlator_tb #(
             @(posedge clk); #5;
         end
 
-        repeat(10) begin
-            @(posedge shiftable); #5;
-            shift = 1;
+        repeat(CODE_LENGTH*OVERSAMPLING) begin
+            @(posedge lshiftable); #5;
+            lshift = 1;
             @(posedge clk); #5;
-            shift = 0;
+            lshift = 0;
             repeat(LAYERS) begin
                 @(posedge clk); #5;
             end
-            $display("In-phase: %d", out);
+            $display("Correlation: %d", out);
             $display("signal: %b", dut.correlator_m.signal[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
             $display("kernel: %b", dut.correlator_m.kernel[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
         end
+
+        repeat(DIV_FREQ*OVERSAMPLING*4) begin
+            $display("In-phase: %d", out);
+            assert(int'(out) == CODE_LENGTH*OVERSAMPLING);
+            @(posedge clk); #5;
+        end
+        repeat(CODE_LENGTH*OVERSAMPLING) begin
+            @(posedge rshiftable); #5;
+            rshift = 1;
+            @(posedge clk); #5;
+            rshift = 0;
+            repeat(LAYERS) begin
+                @(posedge clk); #5;
+            end
+            $display("Correlation: %d", out);
+            $display("signal: %b", dut.correlator_m.signal[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
+            $display("kernel: %b", dut.correlator_m.kernel[CODE_LENGTH*OVERSAMPLING-1:CODE_LENGTH*OVERSAMPLING-8]);
+        end
+        assert(int'(out) == CODE_LENGTH*OVERSAMPLING);
         $display(" -- FINISHED TESTS -- ");
         $finish;
     end

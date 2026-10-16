@@ -46,80 +46,80 @@ module cdma_receiver_data #(
     output logic [CORRELATOR_BIT_WIDTH-1:0] output_bit,
     output logic output_valid
 );
-    logic [CORRELATOR_BIT_WIDTH-1:0] late_out, on_out, early_out;
-    logic late_valid, on_valid, early_valid, late_shiftable, on_shiftable, early_shiftable;
+    // logic [CORRELATOR_BIT_WIDTH-1:0] late_out, on_out, early_out;
+    // logic late_valid, on_valid, early_valid, late_shiftable, on_shiftable, early_shiftable;
 
-    // SUBMODULES
-    cdma_correlator #(
-        .PRN(PRN),
-        .CODE_LENGTH(CODE_LENGTH),
-        .OVERSAMPLING(OVERSAMPLING),
-        .CLOCK_FREQ(CLOCK_FREQ),
-        .CHIP_FREQ(CHIP_FREQ)
-    ) correlator_on_m (
-        .clk,
-        .rst,
-        .signal,
-        .shift(shift_on),
+    // // SUBMODULES
+    // cdma_correlator #(
+    //     .PRN(PRN),
+    //     .CODE_LENGTH(CODE_LENGTH),
+    //     .OVERSAMPLING(OVERSAMPLING),
+    //     .CLOCK_FREQ(CLOCK_FREQ),
+    //     .CHIP_FREQ(CHIP_FREQ)
+    // ) correlator_on_m (
+    //     .clk,
+    //     .rst,
+    //     .signal,
+    //     .shift(shift_on),
 
-        .out(on_out),
-        .valid(on_valid),
-        .shiftable(on_shiftable)
-    );
+    //     .out(on_out),
+    //     .valid(on_valid),
+    //     .shiftable(on_shiftable)
+    // );
 
-    cdma_correlator #(
-        .PRN(PRN),
-        .CODE_LENGTH(CODE_LENGTH),
-        .OVERSAMPLING(OVERSAMPLING),
-        .CLOCK_FREQ(CLOCK_FREQ),
-        .CHIP_FREQ(CHIP_FREQ)
-    ) correlator_early_m (
-        .clk,
-        .rst,
-        .signal,
-        .shift(shift_early),
+    // cdma_correlator #(
+    //     .PRN(PRN),
+    //     .CODE_LENGTH(CODE_LENGTH),
+    //     .OVERSAMPLING(OVERSAMPLING),
+    //     .CLOCK_FREQ(CLOCK_FREQ),
+    //     .CHIP_FREQ(CHIP_FREQ)
+    // ) correlator_early_m (
+    //     .clk,
+    //     .rst,
+    //     .signal,
+    //     .shift(shift_early),
 
-        .out(early_out),
-        .valid(early_valid),
-        .shiftable(early_shiftable)
-    );
+    //     .out(early_out),
+    //     .valid(early_valid),
+    //     .shiftable(early_shiftable)
+    // );
 
-    cdma_correlator #(
-        .PRN(PRN),
-        .CODE_LENGTH(CODE_LENGTH),
-        .OVERSAMPLING(OVERSAMPLING),
-        .CLOCK_FREQ(CLOCK_FREQ),
-        .CHIP_FREQ(CHIP_FREQ)
-    ) correlator_late_m (
-        .clk,
-        .rst,
-        .signal,
-        .shift(shift_late),
+    // cdma_correlator #(
+    //     .PRN(PRN),
+    //     .CODE_LENGTH(CODE_LENGTH),
+    //     .OVERSAMPLING(OVERSAMPLING),
+    //     .CLOCK_FREQ(CLOCK_FREQ),
+    //     .CHIP_FREQ(CHIP_FREQ)
+    // ) correlator_late_m (
+    //     .clk,
+    //     .rst,
+    //     .signal,
+    //     .shift(shift_late),
 
-        .out(late_out),
-        .valid(late_valid),
-        .shiftable(late_shiftable)
-    );
+    //     .out(late_out),
+    //     .valid(late_valid),
+    //     .shiftable(late_shiftable)
+    // );
 
-    lfsr_timer #(
-        .COUNT(LAYERS-1)
-    ) timer_m (
-        .clk,
-        .rst(start_timer),
-        .en(1),
+    // lfsr_timer #(
+    //     .COUNT(LAYERS-1)
+    // ) timer_m (
+    //     .clk,
+    //     .rst(start_timer),
+    //     .en(1),
         
-        .done
-    );
+    //     .done
+    // );
 
-    assign shiftable = early_shiftable & on_shiftable & late_shiftable;
-    assign valids = early_valid & on_valid & late_valid;
+    // assign shiftable = early_shiftable & on_shiftable & late_shiftable;
+    // assign valids = early_valid & on_valid & late_valid;
 
-    assign output_valid = in_range;  // might attempt to do bit alignment which would make this more complex
+    // assign output_valid = in_range;  // might attempt to do bit alignment which would make this more complex
 
-    always_comb begin
-        out_bit = 'x;
-        in_range = 0;
-        if (on_out < ) out_bit = 1;
-        else if (on_out > ) out_bit = 0;
-    end  // always_comb
+    // always_comb begin
+    //     out_bit = 'x;
+    //     in_range = 0;
+    //     if (on_out < ) out_bit = 1;
+    //     else if (on_out > ) out_bit = 0;
+    // end  // always_comb
 endmodule  // cdma_receiver_data

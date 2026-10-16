@@ -10,9 +10,13 @@
  * @param[in] clk           the clock driving the sequential logic
  * @param[in] rst           the active HIGH reset signal
  * @param[in] signal        the incoming signal coming in at the clock frequency
+ * @param[in] lshift        active HIGH left shift
+ * @param[in] rshift        active HIGH right shift
  * @param[out] out          the correlation for the code (epoch)
  * @param[out] valid        whether the kernel has been fully loaded
- * @param[out] shiftable    whether it's possible to shift on this cycle
+ * @param[out] lshiftable    whether it's possible to left shift on this cycle
+ * @param[out] rshiftable    whether it's possible to right shift on this cycle
+ * @note asserting \p lshift and \p rshift at the same time is undefined
  */
 
 module cdma_correlator #(
@@ -27,14 +31,17 @@ module cdma_correlator #(
     input logic clk,
     input logic rst,
     input logic signal,
-    input logic shift,
+    input logic lshift,
+    input logic rshift,
 
     output logic [$clog2(CODE_LENGTH*OVERSAMPLING+1)-1:0] out,
     output logic valid,
-    output logic shiftable
+    output logic lshiftable,
+    output logic rshiftable
 );
     if ((CLOCK_FREQ % (CHIP_FREQ*OVERSAMPLING)) != 0) $error("The clock frequency needs to be a multiple of the chip frequency times oversampling");
     if (OVERSAMPLING < 2) $error("You must oversample by at least 2");
+    if (DIV_FREQ == 1) $error("The main clock is too slow");
     logic [OVERSAMPLING*CODE_LENGTH-1:0] kernel;
     // SUBMODULES
     // intermediate signals
@@ -72,8 +79,8 @@ module cdma_correlator #(
         .COUNT(OVERSAMPLING-1)
     ) code_enable_gen_m (
         .clk,
-        .rst(rst | (code_en & (sample_en | shift))),
-        .en(sample_en | shift),
+        .rst(rst | (~rshift & code_en & (sample_en | lshift))),
+        .en(~rshift & (sample_en | lshift)),
 
         .done(code_en)
     );
@@ -84,30 +91,21 @@ module cdma_correlator #(
     ) code_module_m (
         .clk,
         .rst,
-        .en(code_en & (sample_en | shift)),
+        .en(~rshift & code_en & (sample_en | lshift)),
 
         .code,
         .cycled()
     );
 
     always_ff @(posedge clk) begin
-        if (DIV_FREQ == 1) begin
-            if (sample_en & ~shift) begin
-                // change phase by not moving lol
-                kernel <= { code, kernel[OVERSAMPLING*CODE_LENGTH-1:1] };
-            end
-        end else begin
-            if (sample_en | shift) begin
-                kernel <= { code, kernel[OVERSAMPLING*CODE_LENGTH-1:1] }; 
-            end
+        if (~rshift & (sample_en | lshift)) begin
+            kernel <= { code, kernel[OVERSAMPLING*CODE_LENGTH-1:1] }; 
         end
+
     end  // always_ff
 
     always_comb begin
-        if (DIV_FREQ == 1) begin
-            shiftable = 1;
-        end else begin
-            shiftable = ~sample_en;
-        end
+        lshiftable = ~sample_en;
+        rshiftable = sample_en;
     end  // always_comb
 endmodule  // cdma_correlator
