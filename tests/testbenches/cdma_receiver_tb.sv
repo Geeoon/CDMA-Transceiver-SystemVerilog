@@ -27,11 +27,11 @@ module cdma_receiver_tb #(
 
     initial begin
         // dump waveforms
-        $dumpfile("waveforms/cdma_correlator_tb.vcd");
+        $dumpfile("waveforms/cdma_receiver_tb.vcd");
         $dumpvars;
 
         $display(" -- Starting cdma_receiver test -- ");
         $display(" -- FINISHED TESTS -- ");
         $finish;
     end
-endmodule  // cdma_correlator_tb
+endmodule  // cdma_receiver_tb
