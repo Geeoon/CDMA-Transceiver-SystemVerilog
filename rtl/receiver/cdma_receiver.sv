@@ -28,20 +28,28 @@ module cdma_receiver #(
     output logic out,
     output logic acquired
 );
-    logic shift_on, shift_early, shift_late, start_timer;
-    logic shiftable, valids, in_range, done;
+    logic lshift_on, lshift_early, lshift_late;
+    logic rshift_on, rshift_early, rshift_late;
+    logic start_timer, lshiftable, rshiftable, valids, lbias, rbias, in_range, done;
     cdma_receiver_ctrl cdma_receiver_ctrl_m (
         .clk,
         .rst,
-        .shiftable,
+        .lshiftable,
+        .rshiftable,
         .valids,
         .in_range,
+        .lbias,
+        .rbias,
         .done,
 
-        .shift_on,
-        .shift_early,
-        .shift_late,
-        .start_timer
+        .lshift_on,
+        .lshift_early,
+        .lshift_late,
+        .rshift_on,
+        .rshift_early,
+        .rshift_late,
+        .start_timer,
+        .acquired
     );
 
     cdma_receiver_data #(
@@ -55,17 +63,22 @@ module cdma_receiver #(
         .rst,
         .signal,
 
-        .shift_on,
-        .shift_early,
-        .shift_late,
+        .lshift_on,
+        .lshift_early,
+        .lshift_late,
+        .rshift_on,
+        .rshift_early,
+        .rshift_late,
         .start_timer,
 
-        .shiftable,
+        .lshiftable,
+        .rshiftable,
         .valids,
         .in_range,
+        .lbias,
+        .rbias,
         .done,
 
-        .output_bit(out),
-        .output_valid(acquired)
+        .output_bit(out)
     );
 endmodule  // cdma_receiver
