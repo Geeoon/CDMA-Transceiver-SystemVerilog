@@ -115,12 +115,14 @@ module cdma_receiver_ctrl (
                             ns = s_acquire;
                         end
                     end
-                end else begin
+                end else if (lshiftable) begin
                     lshift_early = 1;
                     lshift_on = 1;
                     lshift_late = 1;
                     start_timer = 1;
                     ns = s_await;
+                end else begin
+                    ns = s_acquire;
                 end
             end  // s_acquire
 

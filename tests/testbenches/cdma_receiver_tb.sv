@@ -8,7 +8,7 @@ module cdma_receiver_tb #(
     parameter CLOCK_PERIOD=100,
     parameter int PRN=1,
     parameter int CODE_LENGTH=1023,
-    parameter int OVERSAMPLING=4,
+    parameter int OVERSAMPLING=8,
     parameter int CLOCK_FREQ=16,
     parameter int CHIP_FREQ=1,
 
@@ -77,7 +77,7 @@ module cdma_receiver_tb #(
             @(posedge clk); #5;
         end
         tx_rst = 0;
-        
+
         @(posedge acquired); #5;
         $display("Received bit: %b", out);
         data = 0;
