@@ -8,8 +8,8 @@ module cdma_receiver_tb #(
     parameter CLOCK_PERIOD=100,
     parameter int PRN=1,
     parameter int CODE_LENGTH=1023,
-    parameter int OVERSAMPLING=8,
-    parameter int CLOCK_FREQ=16,
+    parameter int OVERSAMPLING=2,
+    parameter int CLOCK_FREQ=4,
     parameter int CHIP_FREQ=1,
 
     localparam int DIV_FREQ=CLOCK_FREQ/(CHIP_FREQ*OVERSAMPLING),
@@ -23,6 +23,7 @@ module cdma_receiver_tb #(
     // outputs
     logic out;
     logic acquired;
+    logic valid;
 
 
     logic tx_rst;
@@ -53,7 +54,8 @@ module cdma_receiver_tb #(
         .signal,
 
         .out,
-        .acquired
+        .acquired,
+        .valid
     );
 
     initial begin
@@ -78,10 +80,10 @@ module cdma_receiver_tb #(
         end
         tx_rst = 0;
 
-        @(posedge acquired); #5;
+        @(posedge valid); #5;
         $display("Received bit: %b", out);
         data = 0;
-        @(posedge acquired); #5;
+        @(posedge valid); #5;
         $display("Received bit: %b", out);
 
         $display(" -- Starting cdma_receiver test -- ");

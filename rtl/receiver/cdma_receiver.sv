@@ -10,8 +10,9 @@
  * @param[in] clk           the clock driving the sequential logic
  * @param[in] rst           the active HIGH reset signal
  * @param[in] signal        the incoming signal coming in at the clock frequency
- * @param[out] bit          whether the kernel has been fully loaded
- * @param[out] acquired     whether it's possible to shift on this cycle
+ * @param[out] bit          the bit that is detected
+ * @param[out] acquired     whether or not the signal has been acquired
+ * @param[out] valid        whether or not \p bit is valid
  */
 
 module cdma_receiver #(
@@ -26,11 +27,13 @@ module cdma_receiver #(
     input logic signal,
 
     output logic out,
-    output logic acquired
+    output logic acquired,
+    output logic valid
 );
     logic lshift_on, lshift_early, lshift_late;
     logic rshift_on, rshift_early, rshift_late;
     logic start_timer, lshiftable, rshiftable, valids, lbias, rbias, in_range, done;
+    logic cycled;
     cdma_receiver_ctrl cdma_receiver_ctrl_m (
         .clk,
         .rst,
@@ -41,6 +44,7 @@ module cdma_receiver #(
         .lbias,
         .rbias,
         .done,
+        .cycled,
 
         .lshift_on,
         .lshift_early,
@@ -79,6 +83,8 @@ module cdma_receiver #(
         .rbias,
         .done,
 
-        .output_bit(out)
+        .output_bit(out),
+        .cycled
     );
+    assign valid = acquired & cycled;
 endmodule  // cdma_receiver

@@ -14,8 +14,9 @@
  * @param[in] rshift        active HIGH right shift
  * @param[out] out          the correlation for the code (epoch)
  * @param[out] valid        whether the kernel has been fully loaded
- * @param[out] lshiftable    whether it's possible to left shift on this cycle
- * @param[out] rshiftable    whether it's possible to right shift on this cycle
+ * @param[out] lshiftable   whether it's possible to left shift on this cycle
+ * @param[out] rshiftable   whether it's possible to right shift on this cycle
+ * @param[out] cycled       whether the gold code has cycled
  * @note asserting \p lshift and \p rshift at the same time is undefined
  */
 
@@ -37,7 +38,8 @@ module cdma_correlator #(
     output logic [$clog2(CODE_LENGTH*OVERSAMPLING+1)-1:0] out,
     output logic valid,
     output logic lshiftable,
-    output logic rshiftable
+    output logic rshiftable,
+    output logic cycled
 );
     if ((CLOCK_FREQ % (CHIP_FREQ*OVERSAMPLING)) != 0) $error("The clock frequency needs to be a multiple of the chip frequency times oversampling");
     if (OVERSAMPLING < 2) $error("You must oversample by at least 2");
@@ -94,7 +96,7 @@ module cdma_correlator #(
         .en(~rshift & code_en & (sample_en | lshift)),
 
         .code,
-        .cycled()
+        .cycled(cycled)
     );
 
     always_ff @(posedge clk) begin

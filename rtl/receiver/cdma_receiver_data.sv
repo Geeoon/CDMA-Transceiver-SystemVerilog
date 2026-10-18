@@ -20,6 +20,7 @@
  * @param[out] rbias        whether the correlation is right biased
  * @param[out] done         whether the timer is done
  * @param[out] output_bit   the actualy received bit
+ * @param[out] cycled       whether the on-time correlator has finished a cycle
  */
 
 module cdma_receiver_data #(
@@ -54,7 +55,8 @@ module cdma_receiver_data #(
     output logic rbias,
     output logic done,
 
-    output logic output_bit
+    output logic output_bit,
+    output logic cycled
 );
     logic [CORRELATOR_BIT_WIDTH-1:0] late_out, on_out, early_out;
     logic late_valid, on_valid, early_valid,
@@ -78,7 +80,8 @@ module cdma_receiver_data #(
         .out(on_out),
         .valid(on_valid),
         .lshiftable(on_lshiftable),
-        .rshiftable(on_rshiftable)
+        .rshiftable(on_rshiftable),
+        .cycled
     );
 
     cdma_correlator #(
@@ -97,7 +100,8 @@ module cdma_receiver_data #(
         .out(early_out),
         .valid(early_valid),
         .lshiftable(early_lshiftable),
-        .rshiftable(early_rshiftable)
+        .rshiftable(early_rshiftable),
+        .cycled()
     );
 
     cdma_correlator #(
@@ -116,7 +120,8 @@ module cdma_receiver_data #(
         .out(late_out),
         .valid(late_valid),
         .lshiftable(late_lshiftable),
-        .rshiftable(late_rshiftable)
+        .rshiftable(late_rshiftable),
+        .cycled()
     );
 
 

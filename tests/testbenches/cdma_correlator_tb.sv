@@ -25,6 +25,7 @@ module cdma_correlator_tb #(
     logic [$clog2(CODE_LENGTH*OVERSAMPLING+1)-1:0] out;
     logic valid;
     logic lshiftable, rshiftable;
+    logic cycled;
 
     logic data;
 
@@ -59,7 +60,8 @@ module cdma_correlator_tb #(
         .out,
         .valid,
         .lshiftable,
-        .rshiftable
+        .rshiftable,
+        .cycled
     );
 
     initial begin
