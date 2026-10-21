@@ -11,6 +11,8 @@ module cdma_receiver_tb #(
     parameter int OVERSAMPLING=2,
     parameter int CLOCK_FREQ=4,
     parameter int CHIP_FREQ=1,
+    parameter int N=20,
+    parameter int TEST_LENGTH=100,
 
     localparam int DIV_FREQ=CLOCK_FREQ/(CHIP_FREQ*OVERSAMPLING),
     localparam int LAYERS=1+$clog2(CODE_LENGTH*OVERSAMPLING)
@@ -28,18 +30,19 @@ module cdma_receiver_tb #(
 
     logic tx_rst;
     logic data;
+    logic tx_done;
     cdma_transmitter #(
         .PRN(PRN),
         .CLOCK_FREQ(CLOCK_FREQ),
         .CHIP_FREQ(CHIP_FREQ),
-        .N(20)
+        .N(N)
     ) signal_generator (
         .clk,
         .rst(tx_rst),
         .data,
         
         .code(signal),
-        .done()
+        .done(tx_done)
     );
 
     cdma_receiver #(
@@ -65,28 +68,45 @@ module cdma_receiver_tb #(
         end  // forever
     end  // initial
 
+    bit bit_samples [0:N-1];
     initial begin
+        $urandom('hCAFEBABE);
         // dump waveforms
-        $dumpfile("waveforms/cdma_receiver_tb.vcd");
-        $dumpvars;
+        // $dumpfile("waveforms/cdma_receiver_tb.vcd");  // waveform is too large
+        // $dumpvars;
+        $display(" -- Starting cdma_receiver test -- ");
         // reset
         rst = 1;
         tx_rst = 1;
         data = 1;
         @(posedge clk); #5;
         rst = 0;
-        repeat(100) begin
+        repeat(89) begin
             @(posedge clk); #5;
         end
         tx_rst = 0;
+        
+        repeat(TEST_LENGTH) begin
+            data = 1'($urandom());
+            @(posedge tx_done); #5;
+            // we better have acquired the signal by now
+            if (~acquired) $fatal("Failed to acquire signal in time.");
+            @(posedge clk); #5;
+            
+            for (int i = 0;; i++) begin
+                @(posedge valid, posedge tx_done); #5;
+                if (tx_done) break;
+                assert(i != N);
+                bit_samples[i] = out;
+                if (tx_done & ~valid) $fatal("The transmitter and receiver were left in a bad state.  tx_done=%b valid=%b", tx_done, valid);
+            end
 
-        @(posedge valid); #5;
-        $display("Received bit: %b", out);
-        data = 0;
-        @(posedge valid); #5;
-        $display("Received bit: %b", out);
+            // there should be no bit errors since there's no noise
+            foreach (bit_samples[i]) assert(bit_samples[i] == data);
+            $display("Passed test with sending and receiving %b", data);
+            @(negedge tx_done); #5;
+        end
 
-        $display(" -- Starting cdma_receiver test -- ");
         $display(" -- FINISHED TESTS -- ");
         $finish;
     end
